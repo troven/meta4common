@@ -3,6 +3,8 @@ var self = module.exports
 // =============================================================================
 // framework packages
 
+var _          = require('underscore');     // collections helper
+
 // =============================================================================
 
 self.accepts = {
