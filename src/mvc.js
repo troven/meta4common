@@ -3,7 +3,11 @@ var self = module.exports
 // =============================================================================
 // framework packages
 
-var _          = require('underscore');     // collections helper
+var _          = require('underscore');     // functional coding
+
+// meta4 packages
+
+var files      = require('./files');     	// files helper
 
 // =============================================================================
 
@@ -20,11 +24,14 @@ self.reload = {
 		_.each(feature.paths, function(fpath, key) {
 			if ( _.isFunction(self.reload[key]) ) {
 				// refresh uses closure to encapsulate feature/path state 
+				files.mkdirs(fpath)
+				cache[key] = self.reload[key](fpath, feature)
 				cache[key].refresh = function() {
 					cache[key] = self.reload[key](fpath, feature)
 				}
 			}
 		})
+	    cache.now = new Date().getTime()
 
 		// refresh uses closure to encapsulate feature 
 		cache.refresh = function() {
@@ -35,8 +42,7 @@ self.reload = {
 	},
 
 	models: function(modelsDir, feature) {
-		helper.files.mkdirs(modelsDir)
-		var found  = helper.files.find(modelsDir, self.accepts.json )
+		var found  = files.find(modelsDir, self.accepts.json )
 		var models = {}
 
 		_.each( found, function(data, file) {
@@ -59,8 +65,7 @@ self.reload = {
 		return models
 	},
     views: function(viewsDir) {
-        helper.files.mkdirs(viewsDir)
-        var found  = helper.files.find(viewsDir, self.accepts.json )
+        var found  = files.find(viewsDir, self.accepts.json )
         var views = {}
         _.each( found, function(data, file) {
             try {
@@ -75,8 +80,7 @@ self.reload = {
     },
 
     templates: function(templatesDir, feature) {
-	    helper.files.mkdirs(templatesDir)
-	    var found  = helper.files.find(templatesDir, self.accepts.html )
+	    var found  = files.find(templatesDir, self.accepts.html )
 	    var templates = {}
 
 	    // add templates to recipe
@@ -92,8 +96,7 @@ self.reload = {
     },
 
     scripts: function(scriptsDir, feature) {
-	    helper.files.mkdirs(scriptsDir)
-	    var found  = helper.files.find(scriptsDir, self.accepts.ecma )
+	    var found  = files.find(scriptsDir, self.accepts.ecma )
 		var scripts = {}
 
 	    // add JS scripts to recipe
