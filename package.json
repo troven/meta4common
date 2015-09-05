@@ -1,6 +1,6 @@
 {
   "name": "meta4helpers",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "library of utility functions",
   "main": "src/index.js",
   "scripts": {
@@ -20,6 +20,5 @@
     "mkdirp": "~0.5.1",
     "underscore": "^1.8.3"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
