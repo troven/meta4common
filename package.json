@@ -7,14 +7,7 @@
     "start": "node src/index.js"
   },
   "keywords": [
-    "meta4",
-    "json",
-    "wireframe",
-    "agile",
-    "lean",
-    "mvc",
-    "mvvm",
-    "mvp"
+    "meta4"
   ],
   "author": "Troven <meta4@troven.com.au> (http://meta4beta.com/)",
   "licenses": [
@@ -28,9 +21,5 @@
     "underscore": "^1.8.3"
   },
   "devDependencies": {
-    "grunt": "~0.4.5",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-nodeunit": "~0.4.1",
-    "grunt-contrib-uglify": "~0.5.0"
   }
 }

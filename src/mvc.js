@@ -59,7 +59,6 @@ self.reload = {
 				models[model.id] = model
 			}
 
-			model.url = model.url || feature.basePath+"/"+model.id
 //        console.log("\tmodel: ", model.id, "@", model.url)
 		})
 		return models
