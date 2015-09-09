@@ -54,10 +54,8 @@ self.reload = {
 			}
 
 			// only designated client models
-			if (model.isClient) {
-				model.id = model.id || path.basename(file, ".json")
-				models[model.id] = model
-			}
+			model.id = model.id || path.basename(file, ".json")
+			models[model.id] = model
 
 //        console.log("\tmodel: ", model.id, "@", model.url)
 		})
