@@ -55,7 +55,22 @@ self.reload = {
 
 			// only designated client models
 			model.id = model.id || path.basename(file, ".json")
+			model.collection = model.collection || model.id
 			models[model.id] = model
+			
+			
+			/proxy models - from queries & filters
+			_.each(model.queries, function(query, id) {
+				var proxy = _.extend({ id: model.collection+"/"+id, can: { read: true } } )
+				models[proxy.id] = proxy;
+			});
+			_.each(model.filters, function(filter, id) {
+				var proxy = _.extend({}, 
+					{ id: model.collection+"/"+id, collection: model.collection, 
+					can: { create: true, read: true, update: true, delete: true } }, 
+				filter);
+				models[proxy.id] = proxy;
+			});
 
 //        console.log("\tmodel: ", model.id, "@", model.url)
 		})
