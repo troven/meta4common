@@ -55,20 +55,33 @@ self.reload = {
 
 			// only designated client models
 			model.id = model.id || path.basename(file, ".json")
+			model.label = model.label || model.id
 			model.collection = model.collection || model.id
 			models[model.id] = model
+			if (_.isString(model.adapter)) {
+				model.adapter = feature.adapter[model.adapter] || { idAttribute: "@rid" }
+			}
+			model.isAttribute = model.isAttribute || model.adapter.isAttribute || "@rid"
+			var isServer = model.isServer?true:proxy.adapter?true:false
 			
-			
-			/proxy models - from queries & filters
+			//proxy models - from queries & filters
 			_.each(model.queries, function(query, id) {
-				var proxy = _.extend({ id: model.collection+"/"+id, can: { read: true } } )
+				var proxy = _.extend({ id: model.collection+"/"+id, collection: model.collection, can: { read: true }, 
+					label: model.label + " ("+id+")", idAttribute: model.isAttribute,
+				  	debug: model.debug, prefetch: model.prefetch, type: model.type,
+			  		isProxy: true, isServer: isServer, isClient: model.isClient } )
+				if (proxy.isServer) proxy.adapter = _.extend( {}, model.adapter );
 				models[proxy.id] = proxy;
 			});
 			_.each(model.filters, function(filter, id) {
 				var proxy = _.extend({}, 
 					{ id: model.collection+"/"+id, collection: model.collection, 
-					can: { create: true, read: true, update: true, delete: true } }, 
+					can: { create: true, read: true, update: true, delete: true }, 
+					label: model.label + " ("+filter.id+")", idAttribute: model.isAttribute,
+					debug: model.debug, prefetch: model.prefetch, type: model.type,
+					isProxy: true, isServer: isServer, isClient: model.isClient }, 
 				filter);
+				if (proxy.isServer) proxy.adapter = _.extend( {}, model.adapter );
 				models[proxy.id] = proxy;
 			});
 
