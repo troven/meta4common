@@ -3,7 +3,9 @@ var self = module.exports = module.exports || {};
 // =============================================================================
 // framework packages
 
-var _          = require('underscore');     // underscore
+var _           = require('underscore');     // underscore
+var assert      = require("assert")
+
 // =============================================================================
 
 self.at = function(mixins, meta) {
