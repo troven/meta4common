@@ -16,6 +16,7 @@ self.defaultAttributeId = "@rid";
 
 self.accepts = {
 	json: function(file, data) { return file.indexOf(".json")>0 },
+    yaml: function(file, data) { return file.indexOf(".yaml")>0 },
 	html: function(file, data) { return file.indexOf(".html")>0 },
 	ecma: function(file, data) { return file.indexOf(".js")>0 }
 }
@@ -102,7 +103,7 @@ self.reload = {
                     models[proxy.id] = proxy;
                 });
             }
-            console.log("UX model: %s", model.id)
+//            console.log("UX model: %s", model.id)
 		})
 		return models
 	},

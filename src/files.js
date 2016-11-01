@@ -48,7 +48,7 @@ _.extend(self, {
         assert(file, "Missing file");
         assert(self.exists(file), "File not found: " + file);
         options = options || {};
-        console.log("load %s: %s", self.FILE_ENCODING, file);
+//        console.log("load %s: %s", self.FILE_ENCODING, file);
         var raw = fs.readFileSync(file, self.FILE_ENCODING);
         return raw;
     },
@@ -133,7 +133,6 @@ _.extend(self, {
         files = files || {}
 
         var recurse = function (dir, files) {
-
             var found = fs.readdirSync(dir)
 
             found.forEach(function (file) {
@@ -141,7 +140,7 @@ _.extend(self, {
                 var stat = fs.statSync(path)
 
                 if (stat.isDirectory()) {
-                    recurse(path + "/")
+                    recurse(path + "/", files);
                 } else {
                     var data = self.load(path);
                     if (!accept || accept(path, data)) {
