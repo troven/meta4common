@@ -1,18 +1,13 @@
-var self = module.exports = module.exports || {};
+var assert = require("assert");
 
-// =============================================================================
-// framework packages
+var self = module.exports;
 
-var assert = require("assert")
-// =============================================================================
+self.files = require("./files");
+assert (self.files, "Missing {{files}} binding");
+assert (self.files.find, "Missing {{files.find}} function");
 
-self.files = require("./files")
+self.mixins = require("./mixins");
+assert (self.mixins, "Missing {{mixins}} binding");
+assert (self.mixins.at, "Missing {{mixins.at}} function");
 
-assert (self.files, "Missing {{files}} binding")
-assert (self.files.find, "Missing {{files.find}} function")
-
-self.mixins = require("./mixins")
-assert (self.mixins, "Missing {{mixins}} binding")
-assert (self.mixins.at, "Missing {{mixins.at}} function")
-
-self.mvc  = require("./mvc")
+self.mvc  = require("./packaging");

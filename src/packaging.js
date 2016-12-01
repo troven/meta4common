@@ -1,3 +1,5 @@
+var debug = require("debug")("meta4:packaging");
+
 var self = module.exports
 
 // =============================================================================
@@ -25,11 +27,10 @@ self.accepts = {
 self.reload = {
 
 	all: function(feature, cache) {
-        console.log("reload all: %j", feature);
         var cache = cache || {};
 
 		_.each(feature.paths, function(fpath, key) {
-            console.log("reload: %s -> %s", key, fpath);
+//            debug("reload: %s -> %s", key, fpath);
 			if ( _.isFunction(self.reload[key]) ) {
 				// refresh uses closure to encapsulate feature/path state 
 				files.mkdirs(fpath);
@@ -48,8 +49,10 @@ self.reload = {
 
 	models: function(modelsDir, feature) {
         assert(modelsDir, "Missing modelsDir");
+        feature.adapter = feature.adapter = {};
 		var found  = files.find(modelsDir, self.accepts.json )
 		var models = {}
+//debug("found models: %j", _.keys(found));
 
 		_.each( found, function(data, file) {
 			if (!data) return
@@ -57,7 +60,7 @@ self.reload = {
 				var model = JSON.parse(data);
                 assert(model, "Model data is missing: "+file);
 			} catch(e) {
-				console.log("Corrupt JSON:", file)
+				debug("Corrupt JSON:", file)
 			}
 
 			// only designated client models
@@ -66,12 +69,12 @@ self.reload = {
 			model.collection = model.collection || model.id;
 //            assert(![model.id], "Duplicate model exists: "+model.id);
 			models[model.id] = model;
-            model.adapter = model.adapter || {};
+            model.adapter = model.adapter || model.store || "default" ;
 
-//            console.log("model: %j", model);
+            debug("model: %s @ %s -> %j", model.id, file, model.adapter);
 
 			if (_.isString(model.adapter)) {
-				model.adapter = feature.adapter[model.adapter] || { idAttribute: self.defaultAttributeId };
+				model.adapter = feature.adapter[model.adapter] || { idAttribute: self.defaultAttributeId, type: model.adapter };
 			}
 
 			model.isAttribute = model.isAttribute || model.adapter.isAttribute || self.defaultAttributeId;
@@ -103,7 +106,7 @@ self.reload = {
                     models[proxy.id] = proxy;
                 });
             }
-//            console.log("UX model: %s", model.id)
+//            debug("UX model: %s", model.id)
 		})
 		return models
 	},
@@ -111,7 +114,7 @@ self.reload = {
     views: function(viewsDir) {
 	    assert(viewsDir, "Missing viewsDir");
         var found  = files.find(viewsDir, self.accepts.json )
-        console.log("UX: has %s views %s", found.length, viewsDir)
+        debug("found %s views %s", _.keys(found).length, viewsDir)
 
         var views = {}
         _.each( found, function(data, file) {
@@ -119,7 +122,7 @@ self.reload = {
                 var view = JSON.parse(data)
                 view.id = view.id || path.basename(path.normalize(file), ".json");
                 views[view.id] = view;
-                console.log("UX: view: ", view.id);
+//                debug("view: ", view.id);
             } catch(e) {
                 console.error("Error:", file, e)
             }
@@ -130,7 +133,7 @@ self.reload = {
     templates: function(templatesDir, feature) {
         assert(templatesDir, "Missing templatesDir");
 	    var found  = files.find(templatesDir, self.accepts.html )
-        console.log("UX: has %s templates %s", found.length, templatesDir)
+        debug("found %j templates @ %s", _.keys(found).length, templatesDir)
 
 	    var templates = {}
 
@@ -138,7 +141,7 @@ self.reload = {
 	    var assetKey = "templates"
 	    _.each( found, function(data, file) {
 		    var id = file.substring(feature.paths[assetKey].length+1)
-console.log("UX: template", id)
+// debug("template", id)
 
 		    // strip repetitive whitespace
 		    templates[assetKey+":"+id] = (""+data).replace(/\s+/g, ' ');
@@ -149,7 +152,7 @@ console.log("UX: template", id)
     scripts: function(scriptsDir, feature) {
         assert(scriptsDir, "Missing scriptsDir");
 	    var found  = files.find(scriptsDir, self.accepts.ecma )
-        console.log("UX: has %s scripts %s", found.length, scriptsDir)
+        debug("found %s scripts @ %s", _.keys(found).length, scriptsDir)
 
 		var scripts = {}
 
@@ -157,7 +160,7 @@ console.log("UX: template", id)
 	    var assetKey = "scripts"
 	    _.each( found, function(data, file) {
 		    var id = file.substring(feature.paths[assetKey].length+1)
-//console.log("UX: script", id)
+//debug("script", id)
 		    scripts[assetKey+":"+id] = ""+data
 	    })
 	    return scripts

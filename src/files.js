@@ -1,3 +1,5 @@
+var debug = require("debug")("meta4:files");
+
 var self = module.exports = module.exports || {};
 
 // =============================================================================
@@ -24,10 +26,10 @@ _.extend(self, {
         assert(scope, "Missing scope");
         assert(scope.paths, "Missing scope paths");
         var dir = scope.paths.files || scope.files;
-        // console.log("PATHS: %j", scope.paths);
+        // debug("PATHS: %j", scope.paths);
         assert(dir, "Missing root folder");
         var path = self.path(dir, file);
-        // console.log("ROOT: %s [%s] -> %s", dir, file, path);
+        // debug("ROOT: %s [%s] -> %s", dir, file, path);
         return path;
     },
 
@@ -40,7 +42,7 @@ _.extend(self, {
         options = _.extend(options, json);
         options.paths = _.extend(paths, options.paths);
 
-        console.log("configured: %s", configFile)
+        debug("configured: %s", configFile)
         return options;
     },
 
@@ -48,7 +50,7 @@ _.extend(self, {
         assert(file, "Missing file");
         assert(self.exists(file), "File not found: " + file);
         options = options || {};
-//        console.log("load %s: %s", self.FILE_ENCODING, file);
+//        debug("load %s: %s", self.FILE_ENCODING, file);
         var raw = fs.readFileSync(file, self.FILE_ENCODING);
         return raw;
     },
@@ -89,7 +91,7 @@ _.extend(self, {
 
     rmrf: function (path) {
         assert(path, "Missing path");
-        console.log("rm -rf %s", path);
+        debug("rm -rf %s", path);
         if (self.exists(path)) {
             if (self.isDirectory(path)) {
                 fs.readdirSync(path).forEach(function (file, index) {
@@ -128,9 +130,7 @@ _.extend(self, {
         return path.indexOf(filter) >= 0;
     },
 
-    find: function (home, accept, files) {
-
-        files = files || {}
+    find: function (home, accept, _files) {
 
         var recurse = function (dir, files) {
             var found = fs.readdirSync(dir)
@@ -151,7 +151,7 @@ _.extend(self, {
             return files;
         }
 
-        return recurse(home, files)
+        return recurse(home, _files || {})
     },
 
     follow: function (path, onFound, allDone) {

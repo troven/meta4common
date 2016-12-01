@@ -1,3 +1,5 @@
+var debug = require("debug")("meta4:mixin");
+
 var self = module.exports = module.exports || {};
 
 // =============================================================================
