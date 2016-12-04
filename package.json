@@ -1,6 +1,6 @@
 {
   "name": "meta4common",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "meta4 utility library",
   "main": "src/index.js",
   "scripts": {
