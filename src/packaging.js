@@ -1,4 +1,5 @@
 var debug = require("debug")("meta4:packaging");
+var paths = require("path");
 
 var self = module.exports
 
@@ -17,6 +18,7 @@ var files      = require('./files');     	// files helper
 self.defaultAttributeId = "@rid";
 
 self.accepts = {
+    json_yaml: function(file, data) { return file.lastIndexOf(".json")>0 || file.lastIndexOf(".yaml")>0 },
 	json: function(file, data) { return file.indexOf(".json")>0 },
     yaml: function(file, data) { return file.indexOf(".yaml")>0 },
 	html: function(file, data) { return file.indexOf(".html")>0 },
@@ -50,21 +52,16 @@ self.reload = {
 	models: function(modelsDir, feature) {
         assert(modelsDir, "Missing modelsDir");
         feature.adapter = feature.adapter = {};
-		var found  = files.find(modelsDir, self.accepts.json )
+		var found  = files.find(modelsDir, self.accepts.json_yaml )
 		var models = {}
 //debug("found models: %j", _.keys(found));
 
-		_.each( found, function(data, file) {
-			if (!data) return
-			try {
-				var model = JSON.parse(data);
-                assert(model, "Model data is missing: "+file);
-			} catch(e) {
-				debug("Corrupt JSON:", file)
-			}
+		_.each( found, function(model, file) {
+			if (!model) return
 
+            var extn = files.extension(file);
 			// only designated client models
-			model.id = model.id || path.basename(file, ".json");
+			model.id = model.id || paths.basename(file, "."+extn);
 			model.label = model.label || model.id;
 			model.collection = model.collection || model.id;
 //            assert(![model.id], "Duplicate model exists: "+model.id);
@@ -113,18 +110,19 @@ self.reload = {
 
     views: function(viewsDir) {
 	    assert(viewsDir, "Missing viewsDir");
-        var found  = files.find(viewsDir, self.accepts.json )
+        var found  = files.find(viewsDir, self.accepts.json_yaml )
         debug("found %s views %s", _.keys(found).length, viewsDir)
 
         var views = {}
-        _.each( found, function(data, file) {
+        _.each( found, function(view, file) {
+            var extn = files.extension(file);
+            view.id = view.id || path.basename(file, "."+extn);
+console.log("VIEW: %j", view);
             try {
-                var view = JSON.parse(data)
-                view.id = view.id || path.basename(path.normalize(file), ".json");
                 views[view.id] = view;
 //                debug("view: ", view.id);
             } catch(e) {
-                console.error("Error:", file, e)
+                console.error("Error: %s -> %s", file, e)
             }
         })
         return views
