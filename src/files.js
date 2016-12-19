@@ -76,7 +76,7 @@ _.extend(self, {
 		var format = self.extension(file);
 		assert(format, "Missing format");
 		var converter = converts[format];
-		debug("convert: %s -> %s -> %s", file, format, converter);
+		// debug("convert: %s -> %s -> %s", file, format, converter);
 		if (!converter) {
 			onFound ? onFound(file, raw) : raw;
 		} else {

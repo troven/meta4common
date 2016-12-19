@@ -15,7 +15,7 @@ var files      = require('./files');     	// files helper
 
 // =============================================================================
 
-self.defaultAttributeId = "@rid";
+self.defaultAttributeId = "id";
 
 self.accepts = {
     json_yaml: function(file, data) { return file.lastIndexOf(".json")>0 || file.lastIndexOf(".yaml")>0 },
@@ -29,6 +29,7 @@ self.accepts = {
 self.reload = {
 
 	all: function(feature, cache) {
+        assert(feature, "Missing feature");
         var cache = cache || {};
 
 		_.each(feature.paths, function(fpath, key) {
@@ -51,8 +52,10 @@ self.reload = {
 
 	models: function(modelsDir, feature) {
         assert(modelsDir, "Missing modelsDir");
+        assert(feature, "Missing feature");
+
         feature.adapter = feature.adapter = {};
-		var found  = files.find(modelsDir, self.accepts.json_yaml )
+		var found  = files.find(modelsDir, self.accepts.json_yaml );
 		var models = {}
 //debug("found models: %j", _.keys(found));
 
@@ -64,26 +67,32 @@ self.reload = {
 			model.id = model.id || paths.basename(file, "."+extn);
 			model.label = model.label || model.id;
 			model.collection = model.collection || model.id;
-//            assert(![model.id], "Duplicate model exists: "+model.id);
-			models[model.id] = model;
-            model.adapter = model.adapter || model.store || "default" ;
 
-            debug("model: %s @ %s -> %j", model.id, file, model.adapter);
+            // Adapter for remote data storage
+            model.adapter = _.isObject(model.adapter)?model.adapter:{ type: (model.store || "default") };
+            if (_.isString(model.adapter)) {
+                model.adapter = feature.adapter[model.adapter] || { idAttribute: self.defaultAttributeId, type: model.adapter };
+            }
 
-			if (_.isString(model.adapter)) {
-				model.adapter = feature.adapter[model.adapter] || { idAttribute: self.defaultAttributeId, type: model.adapter };
-			}
+            feature.debug && debug("model: %s @ %s -> %j", model.id, file, model.adapter);
 
-			model.isAttribute = model.isAttribute || model.adapter.isAttribute || self.defaultAttributeId;
-			var isServer = model.isServer?true:proxy.adapter?true:false;
+            assert(!models[model.id], "Duplicate model: "+model.id);
+            models[model.id] = model;
+
+			model.idAttribute = model.idAttribute || model.adapter.idAttribute || self.defaultAttributeId;
+
+			var isServer = (model.isServer || model.server || model.adapter)?true:false;
+            var isClient = (model.isClient || model.client)?true:false;
 
 			// proxy models - from queries & filters
             if (model.queries) {
                 _.each(model.queries, function(query, id) {
-                    var proxy = _.extend({ id: model.collection+"/"+id, collection: model.collection, can: { read: true },
+                    var proxy = _.extend(
+                        { id: model.collection+"/"+id, collection: model.collection,
+                        can: { read: true },
                         label: model.label + " ("+id+")", idAttribute: model.isAttribute,
                         debug: model.debug, prefetch: model.prefetch, type: model.type,
-                        isProxy: true, isServer: isServer, isClient: model.isClient } )
+                        isProxy: true, isServer: isServer, isClient: isClient } )
                     if (proxy.isServer) proxy.adapter = _.extend( {}, model.adapter );
                     assert(![proxy.id], "Duplicate model exists: "+proxy.id);
                     models[proxy.id] = proxy;
@@ -108,8 +117,10 @@ self.reload = {
 		return models
 	},
 
-    views: function(viewsDir) {
+    views: function(viewsDir, feature) {
 	    assert(viewsDir, "Missing viewsDir");
+        assert(feature, "Missing feature");
+
         var found  = files.find(viewsDir, self.accepts.json_yaml )
         debug("found %s views %s", _.keys(found).length, viewsDir)
 
@@ -117,7 +128,7 @@ self.reload = {
         _.each( found, function(view, file) {
             var extn = files.extension(file);
             view.id = view.id || path.basename(file, "."+extn);
-console.log("VIEW: %j", view);
+            feature.debug && debug("view: %j", view);
             try {
                 views[view.id] = view;
 //                debug("view: ", view.id);
@@ -130,6 +141,8 @@ console.log("VIEW: %j", view);
 
     templates: function(templatesDir, feature) {
         assert(templatesDir, "Missing templatesDir");
+        assert(feature, "Missing feature");
+
 	    var found  = files.find(templatesDir, self.accepts.html )
         debug("found %j templates @ %s", _.keys(found).length, templatesDir)
 
@@ -149,8 +162,9 @@ console.log("VIEW: %j", view);
 
     scripts: function(scriptsDir, feature) {
         assert(scriptsDir, "Missing scriptsDir");
+        assert(feature, "Missing feature");
+
 	    var found  = files.find(scriptsDir, self.accepts.ecma )
-        debug("found %s scripts @ %s", _.keys(found).length, scriptsDir)
 
 		var scripts = {}
 
@@ -161,6 +175,8 @@ console.log("VIEW: %j", view);
 //debug("script", id)
 		    scripts[assetKey+":"+id] = ""+data
 	    })
+
+        feature.debug && debug("scripts: %j", _.keys(scripts));
 	    return scripts
     }
 }
