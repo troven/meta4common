@@ -71,9 +71,12 @@ self.reload = {
             // Adapter for remote data storage
             model.adapter = _.isObject(model.adapter)?model.adapter:{ type: (model.store || "default") };
             if (_.isString(model.adapter)) {
-                model.adapter = feature.adapter[model.adapter] || { idAttribute: self.defaultAttributeId, type: model.adapter };
+                model.adapter = feature.adapters[model.adapter] || { idAttribute: self.defaultAttributeId, type: model.adapter };
             }
 
+            assert(model.adapter.type, "Missing adapter type");
+
+//            model.adapter = _.extend({}, feature.adapters[model.adapter.type], model.adapter);
             feature.debug && debug("model: %s @ %s -> %j", model.id, file, model.adapter);
 
             assert(!models[model.id], "Duplicate model: "+model.id);
@@ -122,12 +125,12 @@ self.reload = {
         assert(feature, "Missing feature");
 
         var found  = files.find(viewsDir, self.accepts.json_yaml )
-        debug("found %s views %s", _.keys(found).length, viewsDir)
+        feature.debug && debug("found %s views %s", _.keys(found).length, viewsDir)
 
         var views = {}
         _.each( found, function(view, file) {
             var extn = files.extension(file);
-            view.id = view.id || path.basename(file, "."+extn);
+            view.id = view.id || paths.basename(file, "."+extn);
             feature.debug && debug("view: %j", view);
             try {
                 views[view.id] = view;

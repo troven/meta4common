@@ -87,7 +87,7 @@ _.extend(self, {
 				})
 			} catch (e) {
 				console.log("Error in converting: %s -> %s", file, e);
-				throw e;
+				throw new Error(e+" in "+file);
 			}
 		}
 	},
